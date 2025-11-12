@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Tracker Finansial Harian</title>
+    <title>Personal Finance</title>
     <link rel="stylesheet" href="style.css">
+    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💸</text></svg>">
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- html2pdf for client-side PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
     <header>
-        <h1>💸 FinTrack Harian</h1>
+        <h1>💸 Personal Finance</h1>
     </header>
 
     <main>
@@ -19,7 +24,6 @@
             <form id="financialForm">
                 
                 <div id="step1" class="step">
-                    <h3>Langkah 1: Jenis Transaksi</h3>
                     <div class="form-group">
                         <label for="date">Tanggal:</label>
                         <input type="date" id="date" required value="">
@@ -39,8 +43,6 @@
                 </div>
 
                 <div id="step2" class="step" style="display: none;">
-                    <h3>Langkah 2: Detail Transaksi</h3>
-                    
                     <div class="form-group">
                         <label for="category">Kategori:</label>
                         <select id="category" required>
@@ -89,18 +91,22 @@
             <div class="balance-summary">
                 <p>Total Pendapatan: <span id="totalIncome" class="income">Rp 0</span></p>
                 <p>Total Pengeluaran: <span id="totalExpense" class="expense">Rp 0</span></p>
-                <p>Saldo Bersih: <span id="netBalance">Rp 0</span></p>
+                <p>Saldo Bersih: <span id="netBalance" class="balance-number">Rp 0</span></p>
+                <div style="margin-top:10px;">
+                    <button id="downloadPdfBtn" class="btn primary">Download PDF</button>
+                </div>
             </div>
             
             <div id="tableWrapper">
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 20%;">Tanggal</th>
-                            <th style="width: 15%;">Jenis</th>
-                            <th style="width: 25%;">Kategori</th>
-                            <th style="width: 20%;">Jumlah (Rp)</th>
-                            <th style="width: 20%;">Aksi</th> </tr>
+                            <th>Tanggal</th>
+                            <th>Jenis</th>
+                            <th>Kategori</th>
+                            <th>Jumlah (Rp)</th>
+                            <th>Aksi</th>
+                        </tr>
                     </thead>
                     <tbody id="transactionList">
                         </tbody>
