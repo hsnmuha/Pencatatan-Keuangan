@@ -77,17 +77,37 @@ async function loadTransactionsFromCloud() {
         }
         
         const data = await response.json();
-        const rows = Array.isArray(data) ? data : (Array.isArray(data.results) ? data.results : []);
+        const rows = Array.isArray(data)
+            ? data
+            : (Array.isArray(data.results)
+                ? data.results
+                : (Array.isArray(data.data) ? data.data : []));
         if (Array.isArray(rows)) {
-            return rows.map((t) => ({
-                id: t.Timestamp,
-                tanggal: t.Tanggal,
-                jenis: t.Jenis,
-                kategori: t.Kategori,
-                jumlah: parseFloat(String(t.Jumlah).replace(/[^0-9.]/g, '')) || 0,
-                deskripsi: t.Deskripsi || '',
-                gambar: t.Gambar || ''
-            })).filter(t => t.id);
+            return rows.map((t) => {
+                const base = t && typeof t === 'object' ? t : {};
+                const v = base.data || base.cells || base.row || base;
+                const pick = (obj, field) => {
+                    if (!obj || typeof obj !== 'object') return undefined;
+                    if (field in obj) return obj[field];
+                    const k = Object.keys(obj).find(key => key && key.trim().toLowerCase() === field.trim().toLowerCase());
+                    return k ? obj[k] : undefined;
+                };
+                let gambarVal = pick(v, 'Gambar') || '';
+                if (typeof gambarVal === 'string' && gambarVal.includes('HYPERLINK(')) {
+                    const m = gambarVal.match(/HYPERLINK\(\s*"([^"]+)"/i);
+                    if (m && m[1]) gambarVal = m[1];
+                }
+                const cleanGambar = typeof gambarVal === 'string' ? gambarVal.trim() : '';
+                return {
+                    id: pick(v, 'Timestamp'),
+                    tanggal: pick(v, 'Tanggal'),
+                    jenis: pick(v, 'Jenis'),
+                    kategori: pick(v, 'Kategori'),
+                    jumlah: parseFloat(String(pick(v, 'Jumlah')).replace(/[^0-9.]/g, '')) || 0,
+                    deskripsi: pick(v, 'Deskripsi') || '',
+                    gambar: cleanGambar
+                };
+            }).filter(t => t.id);
         }
         return [];
 
@@ -129,8 +149,16 @@ async function getRowIndexByTimestamp(id) {
         });
         if (!res.ok) return null;
         const json = await res.json();
-        const rows = Array.isArray(json) ? json : (Array.isArray(json.results) ? json.results : []);
-        const match = rows.find(r => r.Timestamp === id);
+        const rows = Array.isArray(json)
+            ? json
+            : (Array.isArray(json.results)
+                ? json.results
+                : (Array.isArray(json.data) ? json.data : []));
+        const match = rows.find(r => {
+            const base = r && typeof r === 'object' ? r : {};
+            const v = base.data || base.cells || base.row || base;
+            return v.Timestamp === id;
+        });
         if (!match) return null;
         return match.rowIndex || match._rowIndex || match.rowNumber || null;
     } catch {
@@ -380,11 +408,37 @@ window.goToStep2 = function() {
 
 window.goToStep1 = function() { step1.style.display = 'block'; step2.style.display = 'none'; }
 
-window.showDetails = function(id) {
+async function fetchImageUrlByTimestamp(id) {
+    try {
+        const rowIndex = await getRowIndexByTimestamp(id);
+        if (!rowIndex) return '';
+        const res = await fetch(`${GOOGLE_SHEET_API_URL}/${rowIndex}`, {
+            headers: {
+                'Authorization': `Bearer ${SHEETSON_API_KEY}`,
+                'X-Spreadsheet-Id': SHEETSON_SPREADSHEET_ID
+            }
+        });
+        if (!res.ok) return '';
+        const v = await res.json();
+        let url = v.Gambar || v.gambar || v['Gambar '] || v['gambar '] || '';
+        if (typeof url === 'string' && url.includes('HYPERLINK(')) {
+            const m = url.match(/HYPERLINK\(\s*"([^"]+)"/i);
+            if (m && m[1]) url = m[1];
+        }
+        return typeof url === 'string' ? url.trim() : '';
+    } catch { return ''; }
+}
+
+window.showDetails = async function(id) {
     const transaction = transactions.find(t => t.id === id);
     if (!transaction) return;
-    let imgSection = transaction.gambar ? `<div style="margin-top:10px"><img src="${transaction.gambar}" alt="Struk" style="max-width:100%;height:auto;border:1px solid #ddd;border-radius:6px"/></div>` : `<div style="margin-top:10px;color:#666">Belum ada foto struk.</div>`;
-    let actionButtons = `<div style="margin-top:12px;text-align:center"><button id="addPhotoBtn" class="btn primary">Tambah Foto</button>${transaction.gambar ? ' <button id="deletePhotoBtn" class="btn delete">Hapus Foto</button>' : ''}</div>`;
+    const rawImg = transaction.gambar || transaction.Gambar || transaction['Gambar '] || transaction['gambar'] || '';
+    let imgUrl = typeof rawImg === 'string' ? rawImg.trim() : '';
+    if (!imgUrl) { imgUrl = await fetchImageUrlByTimestamp(transaction.id); }
+    let imgSection = imgUrl ? `<div style="margin-top:10px"><img src="${encodeURI(imgUrl)}" alt="Struk" referrerpolicy="no-referrer" crossorigin="anonymous" style="max-width:100%;height:auto;border:1px solid #ddd;border-radius:6px"/></div>` : `<div style="margin-top:10px;color:#666">Belum ada foto struk.</div>`;
+    let actionButtons = imgUrl
+        ? `<div style="margin-top:12px;text-align:center"><a id="openPhotoBtn" href="${encodeURI(imgUrl)}" target="_blank" rel="noopener" class="btn detail">Buka Gambar</a> <button id="replacePhotoBtn" class="btn primary">Ganti Gambar</button></div>`
+        : `<div style="margin-top:12px;text-align:center"><button id="addPhotoBtn" class="btn primary">Tambah Foto</button></div>`;
     let detailsText = `
         <div style="text-align: left;">
             <strong>Tanggal:</strong> ${transaction.tanggal}<br>
@@ -443,24 +497,43 @@ window.showDetails = function(id) {
                     }
                 });
             }
-            const delBtn = document.getElementById('deletePhotoBtn');
-            if (delBtn) {
-                delBtn.addEventListener('click', async () => {
-                    const confirmResult = await Swal.fire({
-                        title: 'Hapus Foto?',
-                        text: 'Foto struk akan dihapus dari transaksi ini.',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Ya, Hapus'
+            const replaceBtn = document.getElementById('replacePhotoBtn');
+            if (replaceBtn) {
+                replaceBtn.addEventListener('click', async () => {
+                    const { value: file } = await Swal.fire({
+                        title: 'Pilih foto pengganti',
+                        input: 'file',
+                        inputAttributes: { accept: 'image/*' },
+                        confirmButtonText: 'Unggah',
+                        showCancelButton: true
                     });
-                    if (confirmResult.isConfirmed) {
-                        const upd = await updateTransactionImageInCloud(transaction.id, '');
-                        if (upd.success) {
-                            transactions = await loadTransactionsFromCloud();
-                            filterAndRenderTransactions();
-                            Swal.fire('Terhapus', 'Foto struk berhasil dihapus.', 'success');
+                    if (file) {
+                        Swal.showLoading();
+                        const editedBase64 = await openImageEditor(file);
+                        Swal.close();
+                        let finalUrl = '';
+                        if (editedBase64) {
+                            const upRes = await uploadImageToImgbb(editedBase64);
+                            if (upRes.success) finalUrl = upRes.url; else {
+                                Swal.fire('Gagal Upload', upRes.message || 'Tidak dapat mengunggah struk.', 'error');
+                                return;
+                            }
                         } else {
-                            Swal.fire('Gagal', upd.message || 'Tidak dapat menghapus foto.', 'error');
+                            const uploadRes = await handleImageUpload(file);
+                            if (uploadRes.success) finalUrl = uploadRes.url; else {
+                                Swal.fire('Gagal Upload', uploadRes.message || 'Tidak dapat mengunggah struk.', 'error');
+                                return;
+                            }
+                        }
+                        if (finalUrl) {
+                            const upd = await updateTransactionImageInCloud(transaction.id, finalUrl);
+                            if (upd.success) {
+                                transactions = await loadTransactionsFromCloud();
+                                filterAndRenderTransactions();
+                                Swal.fire('Berhasil', 'Foto struk berhasil diganti.', 'success');
+                            } else {
+                                Swal.fire('Gagal', upd.message || 'Tidak dapat menyimpan URL gambar baru.', 'error');
+                            }
                         }
                     }
                 });
@@ -622,7 +695,7 @@ async function uploadImageToImgbb(base64) {
         const res = await fetch(IMGBB_API, { method: 'POST', body: fd });
         if (!res.ok) return { success: false, message: res.statusText };
         const json = await res.json();
-        const url = json && json.data && json.data.url ? json.data.url : '';
+        const url = (json && json.data && (json.data.display_url || (json.data.image && json.data.image.url) || json.data.url)) || '';
         if (!url) return { success: false, message: 'URL kosong dari IMGBB' };
         return { success: true, url };
     } catch (e) {
