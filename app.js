@@ -1,5 +1,5 @@
 // --- KONSTANTA & INISIALISASI ---
-const GOOGLE_SHEET_API_URL = 'https://sheetdb.io/api/v1/n1pjbf97rne9a';
+const GOOGLE_SHEET_API_URL = 'https://sheetdb.io/api/v1/wzjx9cz1ks5h1';
 const IMGBB_API = 'https://api.imgbb.com/1/upload?key=6f20b7c40f8089cbab2e1e64fa40eb57';
 
 const KATEGORI = {
