@@ -92,11 +92,15 @@
 
             <div class="filter-controls form-group">
                 <label>Filter Periode:</label>
-                <div class="filter-group">
+                <div class="filter-group" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
                     <select id="filterYear" onchange="filterAndRenderTransactions()">
                         </select>
                     <select id="filterMonth" onchange="filterAndRenderTransactions()">
                         </select>
+                    <label for="filterStartDate" style="margin-left:10px;">Mulai Tanggal (Opsional):</label>
+                    <input type="date" id="filterStartDate" onchange="filterAndRenderTransactions()">
+                    <label for="filterEndDate">Sampai Tanggal (Opsional):</label>
+                    <input type="date" id="filterEndDate" onchange="filterAndRenderTransactions()">
                 </div>
             </div>
             
