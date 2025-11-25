@@ -28,6 +28,8 @@ const categorySelect = document.getElementById('category');
 const transactionListBody = document.getElementById('transactionList');
 const filterYearSelect = document.getElementById('filterYear'); 
 const filterMonthSelect = document.getElementById('filterMonth');
+const filterStartDateInput = document.getElementById('filterStartDate');
+const filterEndDateInput = document.getElementById('filterEndDate');
 const searchBox = document.getElementById('searchBox');
 const downloadPdfBtn = document.getElementById('downloadPdfBtn');
 const receiptInput = document.getElementById('receipt');
@@ -214,6 +216,8 @@ window.filterAndRenderTransactions = function() {
     const searchTerm = searchBox.value.toLowerCase().trim();
     const selectedYear = filterYearSelect.value;
     const selectedMonth = filterMonthSelect.value;
+    const startDate = filterStartDateInput.value;
+    const endDate = filterEndDateInput.value;
     let filteredList = transactions;
 
     if (searchTerm) {
@@ -228,6 +232,13 @@ window.filterAndRenderTransactions = function() {
         } else {
             const monthSegment = `-${selectedMonth}-`; filteredList = filteredList.filter(t => t.tanggal && t.tanggal.includes(monthSegment));
         }
+    }
+    // Filter by date range if startDate and/or endDate are set
+    if (startDate) {
+        filteredList = filteredList.filter(t => t.tanggal && t.tanggal >= startDate);
+    }
+    if (endDate) {
+        filteredList = filteredList.filter(t => t.tanggal && t.tanggal <= endDate);
     }
     currentFilteredList = filteredList;
     renderTransactions(currentFilteredList);
