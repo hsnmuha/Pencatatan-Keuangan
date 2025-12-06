@@ -56,8 +56,9 @@ select {
     display: flex;
     gap: 10px;
 }
+
 .filter-group select {
-    flex-grow: 1; 
+    flex-grow: 1;
 }
 
 .radio-group .radio-options {
@@ -79,7 +80,7 @@ select {
 }
 
 .btn.primary {
-    background-color: #28a745; 
+    background-color: #28a745;
     color: white;
 }
 
@@ -109,8 +110,8 @@ select {
 .btn.delete {
     background-color: #dc3545;
     color: white;
-    padding: 5px 8px; 
-    font-size: 0.8em; 
+    padding: 5px 8px;
+    font-size: 0.8em;
 }
 
 .button-group {
@@ -124,16 +125,18 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
-    table-layout: auto; /* Ubah dari fixed ke auto agar kolom menyesuaikan konten */
+    table-layout: auto;
+    /* Ubah dari fixed ke auto agar kolom menyesuaikan konten */
 }
 
-th, td {
+th,
+td {
     padding: 8px 10px;
     border: 1px solid #ddd;
     text-align: left;
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    font-size: 0.9em; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.9em;
 }
 
 th {
@@ -142,7 +145,8 @@ th {
 }
 
 th:last-child {
-    background-color: #f2f2f2; /* Pastikan header kolom Aksi juga abu-abu */
+    background-color: #f2f2f2;
+    /* Pastikan header kolom Aksi juga abu-abu */
 }
 
 /* KUNCI: Sel Aksi menggunakan Flexbox Horizontal */
@@ -151,8 +155,10 @@ table td:last-child {
     justify-content: flex-start;
     align-items: center;
     padding: 5px 4px;
-    gap: 5px; /* Jarak antar tombol */
-    background-color: #ffffff; /* Warna abu-abu untuk kolom aksi */
+    gap: 5px;
+    /* Jarak antar tombol */
+    background-color: #ffffff;
+    /* Warna abu-abu untuk kolom aksi */
 }
 
 /* KUNCI: Styling Pesan Kosong */
@@ -167,7 +173,7 @@ table td:last-child {
     border-bottom: 1px solid #ddd;
     border-left: 1px solid #ddd;
     border-right: 1px solid #ddd;
-    box-sizing: border-box; 
+    box-sizing: border-box;
 }
 
 /* Ringkasan Saldo */
@@ -181,12 +187,12 @@ table td:last-child {
 }
 
 .income {
-    color: #28a745; 
+    color: #28a745;
     font-weight: bold;
 }
 
 .expense {
-    color: #dc3545; 
+    color: #dc3545;
     font-weight: bold;
 }
 
@@ -210,6 +216,7 @@ table td:last-child {
         flex-direction: column;
         gap: 0;
     }
+
     .filter-group select {
         width: 100%;
         margin-bottom: 10px;
@@ -221,52 +228,65 @@ table td:last-child {
         max-width: 100%;
         padding-bottom: 10px;
     }
+
     table {
         width: 100%;
         margin-top: 0;
-        table-layout: auto; /* Kolom menyesuaikan konten di mobile */
-        min-width: 500px; /* Lebar minimum tabel agar tidak terlalu sempit */
+        table-layout: auto;
+        /* Kolom menyesuaikan konten di mobile */
+        min-width: 500px;
+        /* Lebar minimum tabel agar tidak terlalu sempit */
     }
 
     /* Kurangi padding untuk menghemat ruang */
-    th, td {
+    th,
+    td {
         padding: 6px 4px;
-        font-size: 0.9em; /* Kembali ke ukuran font semula */
+        font-size: 0.9em;
+        /* Kembali ke ukuran font semula */
     }
 
-    /* Kolom Tanggal lebih sempit */
-    th:first-child, td:first-child {
-        min-width: 70px;
-        max-width: 80px;
+    /* Kolom Tanggal lebih sempit tapi cukup untuk icon drag */
+    th:first-child,
+    td:first-child {
+        min-width: 100px;
+        max-width: 110px;
+        white-space: nowrap;
+        /* Mencegah tanggal turun ke bawah */
     }
 
     /* Kolom Jenis */
-    th:nth-child(2), td:nth-child(2) {
+    th:nth-child(2),
+    td:nth-child(2) {
         min-width: 60px;
         max-width: 70px;
     }
 
     /* Kolom Kategori */
-    th:nth-child(3), td:nth-child(3) {
+    th:nth-child(3),
+    td:nth-child(3) {
         min-width: 80px;
         max-width: 120px;
     }
 
     /* Kolom Jumlah */
-    th:nth-child(4), td:nth-child(4) {
+    th:nth-child(4),
+    td:nth-child(4) {
         min-width: 80px;
         max-width: 100px;
     }
 
     /* Pastikan kolom Aksi tidak terpotong */
     table td:last-child {
-        min-width: 160px; /* Kurangi dari 180px untuk menghemat ruang */
+        min-width: 160px;
+        /* Kurangi dari 180px untuk menghemat ruang */
         flex-shrink: 0;
     }
 
     /* Tombol lebih kecil di mobile */
     .btn {
-        font-size: 0.8em; /* Kembali ke ukuran font semula untuk tombol */
+        font-size: 0.8em;
+        /* Kembali ke ukuran font semula untuk tombol */
         padding: 4px 6px;
     }
 }
