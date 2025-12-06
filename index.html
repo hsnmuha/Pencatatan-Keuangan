@@ -1,24 +1,27 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catat.in</title>
     <link rel="stylesheet" href="style.css">
-    
+
     <link rel="icon" type="image/png" href="icon3.png" />
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- html2pdf for client-side PDF export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <link rel="manifest" href="manifest.json">
     <script>
         if ("serviceWorker" in navigator) {
             navigator.serviceWorker.register("service-worker.js");
         }
-</script>
+    </script>
 
 </head>
+
 <body>
 
     <header>
@@ -29,13 +32,13 @@
         <section class="form-container">
             <h2>Tambah Transaksi Baru</h2>
             <form id="financialForm">
-                
+
                 <div id="step1" class="step">
                     <div class="form-group">
                         <label for="date">Tanggal:</label>
                         <input type="date" id="date" required value="">
                     </div>
-                    
+
                     <div class="form-group radio-group">
                         <label>Jenis:</label>
                         <div class="radio-options">
@@ -45,7 +48,7 @@
                             <label for="expense">Pengeluaran</label>
                         </div>
                     </div>
-                    
+
                     <button type="button" class="btn primary" onclick="goToStep2()">Lanjut &rarr;</button>
                 </div>
 
@@ -56,12 +59,20 @@
                             <option value="">-- Pilih Kategori --</option>
                         </select>
                     </div>
-                    
+
+                    <div class="form-group">
+                        <label for="method">Metode:</label>
+                        <select id="method" required>
+                            <option value="Cash">Cash</option>
+                            <option value="ATM">ATM</option>
+                        </select>
+                    </div>
+
                     <div class="form-group">
                         <label for="amount">Jumlah (Rp):</label>
                         <input type="number" id="amount" required min="100">
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="description">Deskripsi (Opsional):</label>
                         <input type="text" id="description" maxlength="50">
@@ -71,7 +82,7 @@
                         <label for="receipt">Upload Struk (Opsional):</label>
                         <input type="file" id="receipt" accept="image/*">
                     </div>
-                    
+
                     <div class="button-group">
                         <button type="button" class="btn secondary" onclick="goToStep1()">&larr; Kembali</button>
                         <button type="submit" class="btn primary">Simpan Transaksi</button>
@@ -84,48 +95,71 @@
 
         <section class="list-container">
             <h2>Daftar Transaksi</h2>
-            
+
             <div class="filter-controls form-group">
                 <label for="searchBox">Cari Transaksi (Deskripsi/Kategori):</label>
-                <input type="text" id="searchBox" oninput="filterAndRenderTransactions()" placeholder="Ketik kata kunci...">
+                <input type="text" id="searchBox" oninput="filterAndRenderTransactions()"
+                    placeholder="Ketik kata kunci...">
             </div>
 
             <div class="filter-controls form-group">
                 <label>Filter Periode:</label>
                 <div class="filter-group" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
                     <select id="filterYear" onchange="filterAndRenderTransactions()">
-                        </select>
+                    </select>
                     <select id="filterMonth" onchange="filterAndRenderTransactions()">
-                        </select>
+                    </select>
                     <label for="filterStartDate" style="margin-left:10px;">Mulai Tanggal (Opsional):</label>
                     <input type="date" id="filterStartDate" onchange="filterAndRenderTransactions()">
                     <label for="filterEndDate">Sampai Tanggal (Opsional):</label>
                     <input type="date" id="filterEndDate" onchange="filterAndRenderTransactions()">
                 </div>
             </div>
-            
+
             <div class="balance-summary">
-                <p>Total Pendapatan: <span id="totalIncome" class="income">Rp 0</span></p>
-                <p>Total Pengeluaran: <span id="totalExpense" class="expense">Rp 0</span></p>
-                <p>Saldo Bersih: <span id="netBalance" class="balance-number">Rp 0</span></p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 5px;">
+                    <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #e9ecef;">
+                        <h4 style="margin-top: 0; margin-bottom: 5px; text-align: center; color: #495057;">ATM</h4>
+                        <p style="margin: 2px 0; font-size: 0.85em;">Masuk: <span id="incomeATM" class="income">Rp
+                                0</span></p>
+                        <p style="margin: 2px 0; font-size: 0.85em;">Keluar: <span id="expenseATM" class="expense">Rp
+                                0</span></p>
+                        <p style="margin: 2px 0; font-weight: bold; font-size: 0.85em;">Saldo: <span id="balanceATM">Rp
+                                0</span></p>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #e9ecef;">
+                        <h4 style="margin-top: 0; margin-bottom: 5px; text-align: center; color: #495057;">Cash</h4>
+                        <p style="margin: 2px 0; font-size: 0.85em;">Masuk: <span id="incomeCash" class="income">Rp
+                                0</span></p>
+                        <p style="margin: 2px 0; font-size: 0.85em;">Keluar: <span id="expenseCash" class="expense">Rp
+                                0</span></p>
+                        <p style="margin: 2px 0; font-weight: bold; font-size: 0.85em;">Saldo: <span id="balanceCash">Rp
+                                0</span></p>
+                    </div>
+                </div>
+                <hr style="margin: 5px 0;">
+                <p style="margin: 2px 0;">Total Pendapatan: <span id="totalIncome" class="income">Rp 0</span></p>
+                <p style="margin: 2px 0;">Total Pengeluaran: <span id="totalExpense" class="expense">Rp 0</span></p>
+                <p style="margin: 2px 0;">Saldo Bersih: <span id="netBalance" class="balance-number">Rp 0</span></p>
                 <div style="margin-top:10px;">
                     <button id="downloadPdfBtn" class="btn primary">Download PDF</button>
                 </div>
             </div>
-            
+
             <div id="tableWrapper">
                 <table>
                     <thead>
                         <tr>
                             <th>Tanggal</th>
                             <th>Jenis</th>
+                            <th>Metode</th>
                             <th>Kategori</th>
                             <th>Jumlah (Rp)</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="transactionList">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
         </section>
@@ -133,4 +167,5 @@
 
     <script src="app.js"></script>
 </body>
+
 </html>
