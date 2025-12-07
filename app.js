@@ -728,11 +728,31 @@ async function downloadPdf() {
     meta.textContent = `Dibuat: ${new Date().toLocaleString()}`;
     container.appendChild(meta);
 
+    const summary = calculateSummaryData(listToExport);
+
     const summaryDiv = document.createElement('div');
     summaryDiv.innerHTML = `
-        <p>Total Pendapatan: <strong>${document.getElementById('totalIncome').textContent}</strong></p>
-        <p>Total Pengeluaran: <strong>${document.getElementById('totalExpense').textContent}</strong></p>
-        <p>Saldo Bersih: <strong>${document.getElementById('netBalance').textContent}</strong></p>
+        <div style="margin-bottom: 10px;">
+            <p style="margin: 5px 0;">Total Pendapatan: <strong>${formatRupiah(summary.totalIncome)}</strong></p>
+            <p style="margin: 5px 0;">Total Pengeluaran: <strong>${formatRupiah(summary.totalExpense)}</strong></p>
+            <p style="margin: 5px 0;">Saldo Bersih: <strong>${formatRupiah(summary.netBalance)}</strong></p>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 15px;">
+                <h3 style="margin: 0 0 5px 0; font-size: 14px; text-decoration: underline;">Rincian ATM</h3>
+                <p style="margin: 2px 0;">Masuk: <span style="color: #28a745; font-weight: bold;">${formatRupiah(summary.incomeATM)}</span></p>
+                <p style="margin: 2px 0;">Keluar: <span style="color: #dc3545; font-weight: bold;">${formatRupiah(summary.expenseATM)}</span></p>
+                <p style="margin: 2px 0;">Saldo: <span style="color: ${summary.balanceATM >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">${formatRupiah(summary.balanceATM)}</span></p>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <h3 style="margin: 0 0 5px 0; font-size: 14px; text-decoration: underline;">Rincian Cash</h3>
+                <p style="margin: 2px 0;">Masuk: <span style="color: #28a745; font-weight: bold;">${formatRupiah(summary.incomeCash)}</span></p>
+                <p style="margin: 2px 0;">Keluar: <span style="color: #dc3545; font-weight: bold;">${formatRupiah(summary.expenseCash)}</span></p>
+                <p style="margin: 2px 0;">Saldo: <span style="color: ${summary.balanceCash >= 0 ? '#28a745' : '#dc3545'}; font-weight: bold;">${formatRupiah(summary.balanceCash)}</span></p>
+            </div>
+        </div>
         <hr>
     `;
     container.appendChild(summaryDiv);
